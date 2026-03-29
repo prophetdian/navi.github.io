@@ -5,45 +5,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NAVI AI App</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-        .container { display: flex; flex-direction: column; height: 100vh; }
-        .talk-to-navi, .task-builder { flex: 1; padding: 20px; }
-        .talk-to-navi { background-color: #f0f0f0; }
-        .task-builder { background-color: #e0e0e0; }
-        h1 { margin-top: 0; }
+        body { font-family: Arial, sans-serif; }
+        .task { margin: 10px 0; }
+        .priority { color: red; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="talk-to-navi">
-            <h1>Talk to NAVI</h1>
-            <p>Ask questions or give commands to NAVI:</p>
-            <textarea id="user-input" rows="4" style="width: 100%;"></textarea>
-            <button id="send-button">Send</button>
-            <div id="navi-response"></div>
-        </div>
-        <div class="task-builder">
-            <h1>Task Builder</h1>
-            <p>Create tasks for NAVI:</p>
-            <input type="text" id="task-input" placeholder="Enter your task" style="width: 100%;">
-            <button id="add-task-button">Add Task</button>
-            <ul id="task-list"></ul>
-        </div>
+    <h1>NAVI AI App</h1>
+    <div>
+        <input type="text" id="taskInput" placeholder="Enter your task..."><button id="addTask">Add Task</button>
     </div>
+    <div id="taskList"></div>
     <script>
-        document.getElementById('send-button').onclick = function() {
-            const userInput = document.getElementById('user-input').value;
-            document.getElementById('navi-response').innerText = `NAVI says: ${userInput}`;
-        };
+        const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        const taskInput = document.getElementById('taskInput');
+        const taskList = document.getElementById('taskList');
+        const addTaskButton = document.getElementById('addTask');
 
-        document.getElementById('add-task-button').onclick = function() {
-            const taskInput = document.getElementById('task-input').value;
-            const taskList = document.getElementById('task-list');
-            const newTask = document.createElement('li');
-            newTask.innerText = taskInput;
-            taskList.appendChild(newTask);
-            document.getElementById('task-input').value = '';
-        };
+        function renderTasks() {
+            taskList.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const taskDiv = document.createElement('div');
+                taskDiv.classList.add('task');
+                taskDiv.innerHTML = `<span>${task.text} (Priority: <span class='priority'>${task.priority}</span>)</span> 
+                <button onclick='editTask(${index})'>Edit</button> 
+                <button onclick='deleteTask(${index})'>Delete</button>`;
+                taskList.appendChild(taskDiv);
+            });
+        }
+
+        function addTask() {
+            const taskText = taskInput.value;
+            const priority = prompt('Set Priority (1 to 5)') || 1;
+            if (taskText) {
+                tasks.push({ text: taskText, priority: priority });
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                taskInput.value = '';
+                renderTasks();
+            }
+        }
+
+        function editTask(index) {
+            const updatedText = prompt('Update Task', tasks[index].text);
+            if (updatedText) {
+                tasks[index].text = updatedText;
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                renderTasks();
+            }
+        }
+
+        function deleteTask(index) {
+            tasks.splice(index, 1);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            renderTasks();
+        }
+
+        addTaskButton.onclick = addTask;
+
+        // Initial rendering of tasks
+        renderTasks();
     </script>
 </body>
 </html>
